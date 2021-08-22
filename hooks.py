@@ -13,7 +13,7 @@ commitTableRowFormat = None
 mercurialUI = None
 
 
-def reportToHacknPlan(ui, repo, node, **kwargs):
+def ReportToHacknPlan(ui, repo, node, **kwargs):
     global apiKey
     global projectId
     global commentHeader
@@ -23,8 +23,7 @@ def reportToHacknPlan(ui, repo, node, **kwargs):
     try:
         secrets = json.load(open(secretsFilePath))
     except (IOError, ValueError) as ex:
-        printErrorMsg(
-            "Hack-n-Plan incoming hook could not load secrets because %s \nand.. stopped execution ¯\_(ツ)_/¯" % str(ex))
+        PrintErrorMsg("Hack-n-Plan incoming hook could not load secrets because %s \nand.. stopped execution ¯\_(ツ)_/¯" % str(ex))
 
     apiKey = secrets['apiKey']
     projectId = secrets['projectId']
@@ -32,63 +31,63 @@ def reportToHacknPlan(ui, repo, node, **kwargs):
     commitTableRowFormat = secrets['commitTableRowFormat']
 
     mercurialUI = ui
-    hookUserName = getHookUserName()
+    hookUserName = GetHookUserName()
     commitInfo = repo[node]
 
     rawCommitDescription = commitInfo.description().decode("utf-8")
-    taskIds = parseTaskIds(rawCommitDescription)
+    taskIds = ParseTaskIds(rawCommitDescription)
 
     if len(taskIds) == 0:
         return
 
     commitUser = commitInfo.user().decode("utf-8")
     commitHash = commitInfo.hex()[:12].decode("utf-8")
-    commitDescription = formatCommitMessage(commitHash, commitUser, rawCommitDescription)
+    commitDescription = FormatCommitMessage(commitHash, commitUser, rawCommitDescription)
 
     for taskId in taskIds:
-        comments = getCommentsItemsForTask(taskId)
-        existingComment = getCommentItemForEdit(comments, hookUserName)
+        comments = GetCommentsItemsForTask(taskId)
+        existingComment = GetCommentItemForEdit(comments, hookUserName)
         if existingComment != None:
-            editOldComment(existingComment, commitDescription)
+            EditOldComment(existingComment, commitDescription)
         else:
-            sendNewComment(taskId, commitDescription)
+            SendNewComment(taskId, commitDescription)
 
 
 ########################
 #   Main Actions
 ########################
 
-def editOldComment(inCommentItem, inCommitMessages):
+def EditOldComment(inCommentItem, inCommitMessages):
     taskId = inCommentItem['workItemId']
     commentId = inCommentItem['commentId']
     commentTextForSend = inCommentItem['text'] + ''.join(inCommitMessages)
     url = 'https://api.hacknplan.com/v0/projects/%s/workitems/%s/comments/%s' % (projectId, taskId, commentId)
-    urlRequest = createUrlRequest(url, 'PUT')
-    commentData = prepareCommentData(commentTextForSend)
+    urlRequest = CreateUrlRequest(url, 'PUT')
+    commentData = PrepareCommentData(commentTextForSend)
 
     try:
         urllib.request.urlopen(urlRequest, data=commentData)
     except urllib.error.URLError as ex:
-        printErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
 
 
-def sendNewComment(inTaskId, inCommitMessages):
+def SendNewComment(inTaskId, inCommitMessages):
     url = 'https://api.hacknplan.com/v0/projects/%s/workitems/%s/comments/' % (projectId, inTaskId)
     commentTextForSend = commentHeader + ''.join(inCommitMessages)
-    urlRequest = createUrlRequest(url, 'POST');
-    commentData = prepareCommentData(commentTextForSend)
+    urlRequest = CreateUrlRequest(url, 'POST');
+    commentData = PrepareCommentData(commentTextForSend)
 
     try:
         urllib.request.urlopen(urlRequest, data=commentData)
     except urllib.error.URLError as ex:
-        printErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
 
 
 ########################
 #   Utility methods
 ########################
 
-def createUrlRequest(url, inMethod):
+def CreateUrlRequest(url, inMethod):
     request = urllib.request.Request(url, method=inMethod)
     request.add_header('Authorization', 'ApiKey %s' % apiKey)
     request.add_header('Content-Type', 'application/json')
@@ -96,15 +95,15 @@ def createUrlRequest(url, inMethod):
     return request
 
 
-def prepareCommentData(commentText):
+def PrepareCommentData(commentText):
     return ('"%s"' % commentText).encode("utf-8")
 
 
-def printErrorMsg(msg):
+def PrintErrorMsg(msg):
     mercurialUI.write((msg + "\n").encode("utf-8"))
 
 
-def getHookUserName():
+def GetHookUserName():
     username = None
     if os.path.exists(cacheFilePath):
         cachedData = json.load(open(cacheFilePath))
@@ -112,53 +111,53 @@ def getHookUserName():
             username = cachedData['AccountUsername']
     if username is None:
         url = 'https://api.hacknplan.com/v0/users/me'
-        urlRequest = createUrlRequest(url, 'GET')
+        urlRequest = CreateUrlRequest(url, 'GET')
 
         try:
             response = urllib.request.urlopen(urlRequest)
         except urllib.error.URLError as ex:
-            printErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+            PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
 
-        receivedData = responseToJson(response)
+        receivedData = ResponseToJson(response)
         username = receivedData['username']
         with open(cacheFilePath, 'w') as outfile:
             json.dump({'AccountUsername': username}, outfile)
     return username
 
 
-def responseToJson(response):
+def ResponseToJson(response):
     return json.loads(response.read().decode(response.info().get_param('charset') or 'utf-8'))
 
 
-def isOldComment(inCommentItem, inUserName):
+def IsOldComment(inCommentItem, inUserName):
     return inCommentItem['user']['username'] == inUserName
 
 
-def getCommentsItemsForTask(inTaskId):
+def GetCommentsItemsForTask(inTaskId):
     url = 'https://api.hacknplan.com/v0/projects/%s/workitems/%s/comments' % (projectId, inTaskId)
-    urlRequest = createUrlRequest(url, 'GET')
+    urlRequest = CreateUrlRequest(url, 'GET')
 
     try:
         response = urllib.request.urlopen(urlRequest)
     except urllib.error.URLError as ex:
-        printErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
 
-    receivedData = responseToJson(response)
+    receivedData = ResponseToJson(response)
     return receivedData['items']
 
 
-def formatCommitMessage(inHash, inUser, inDescription):
+def FormatCommitMessage(inHash, inUser, inDescription):
     description = inDescription.strip()
     lineBreakCharIndex = description.find("\n")
     if lineBreakCharIndex >= 0:
         title = description[:lineBreakCharIndex].strip()
     else:
         title = description
-    title = fixDescriptionForTableRow(title)
+    title = FixDescriptionForTableRow(title)
     return commitTableRowFormat % (inHash, inHash, inUser, title)
 
 
-def parseTaskIds(inText):
+def ParseTaskIds(inText):
     words = inText.split()
     taskIds = []
     for word in words:
@@ -171,13 +170,13 @@ def parseTaskIds(inText):
     return taskIds
 
 
-def fixDescriptionForTableRow(inText):
+def FixDescriptionForTableRow(inText):
     inText = inText.replace('|', '&#124;')
     return inText.replace('\n', ' ')
 
 
-def getCommentItemForEdit(inCommentItems, inUserName):
+def GetCommentItemForEdit(inCommentItems, inUserName):
     for inCommentItem in inCommentItems:
-        if isOldComment(inCommentItem, inUserName):
+        if IsOldComment(inCommentItem, inUserName):
             return inCommentItem
     return None

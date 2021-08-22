@@ -181,3 +181,4 @@ def getCommentItemForEdit(inCommentItems, inUserName):
         if isOldComment(inCommentItem, inUserName):
             return inCommentItem
     return None
+

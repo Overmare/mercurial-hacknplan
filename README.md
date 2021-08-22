@@ -5,7 +5,7 @@ Mercurial hook that posts to HacknPlan tasks
 Copy it to the .hg directory of your repository on the server, change its hgrc like this:
 ```
 [hooks]
-incoming = python:.hg/hooks.py:reportToHacknPlan
+incoming = python:.hg/hooks.py:ReportToHacknPlan
 ```
 and put a HacknPlan_Settings.json file right next to it:
 ```

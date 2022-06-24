@@ -1,36 +1,34 @@
 import json
 import os
 import urllib
+from mercurial.ui import ui
 
 hookDirectory = os.path.dirname(os.path.abspath(__file__))
 cacheFilePath = hookDirectory + "/HacknPlan_HookCache.json"
 secretsFilePath = hookDirectory + "/HacknPlan_Settings.json"
 
-apiKey = None
-projectId = None
-commentHeader = None
-commitTableRowFormat = None
-mercurialUI = None
+
+def PrintErrorMsg(msg):
+    ui.write((msg + "\n").encode("utf-8"))
+# end def
+
+
+try:
+    secrets = json.load(open(secretsFilePath))
+except (IOError, ValueError) as ex:
+    PrintErrorMsg(
+        "Hack-n-Plan incoming hook could not load secrets because %s \nand.. stopped execution ¯\_(ツ)_/¯" % str(ex)
+    )
+    exit(1)
+# end try
+
+apiKey = secrets['apiKey']
+projectId = secrets['projectId']
+commentHeader = secrets['commentHeader']
+commitTableRowFormat = secrets['commitTableRowFormat']
 
 
 def ReportToHacknPlan(ui, repo, node, **kwargs):
-    global apiKey
-    global projectId
-    global commentHeader
-    global commitTableRowFormat
-    global mercurialUI
-
-    try:
-        secrets = json.load(open(secretsFilePath))
-    except (IOError, ValueError) as ex:
-        PrintErrorMsg("Hack-n-Plan incoming hook could not load secrets because %s \nand.. stopped execution ¯\_(ツ)_/¯" % str(ex))
-
-    apiKey = secrets['apiKey']
-    projectId = secrets['projectId']
-    commentHeader = secrets['commentHeader']
-    commitTableRowFormat = secrets['commitTableRowFormat']
-
-    mercurialUI = ui
     hookUserName = GetHookUserName()
     commitInfo = repo[node]
 
@@ -99,10 +97,6 @@ def CreateUrlRequest(url, inMethod):
 
 def PrepareCommentData(commentText):
     return ('"%s"' % commentText).encode("utf-8")
-
-
-def PrintErrorMsg(msg):
-    mercurialUI.write((msg + "\n").encode("utf-8"))
 
 
 def GetHookUserName():

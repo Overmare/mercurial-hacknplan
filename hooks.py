@@ -62,8 +62,8 @@ def EditOldComment(inCommentItem, inCommitMessages):
     taskId = inCommentItem['workItemId']
     commentId = inCommentItem['commentId']
     commentTextForSend = inCommentItem['text'] + ''.join(inCommitMessages)
-    url = f'https://api.hacknplan.com/v0/projects/{projectId}/workitems/{taskId}/comments/{commentId}'.format(
-        projectId=projectId, taskId=taskId, commentId=commentId
+    url = 'https://api.hacknplan.com/v0/projects/{project}/workitems/{task}/comments/{comment}'.format(
+        project=projectId, task=taskId, comment=commentId
     )
     urlRequest = CreateUrlRequest(url, 'PUT')
     commentData = PrepareCommentData(commentTextForSend)
@@ -75,7 +75,9 @@ def EditOldComment(inCommentItem, inCommitMessages):
 
 
 def SendNewComment(inTaskId, inCommitMessages):
-    url = 'https://api.hacknplan.com/v0/projects/%s/workitems/%s/comments/' % (projectId, inTaskId)
+    url = 'https://api.hacknplan.com/v0/projects/{project}/workitems/{task}/comments/'.format(
+        project=projectId, task=inTaskId,
+    )
     commentTextForSend = commentHeader + ''.join(inCommitMessages)
     urlRequest = CreateUrlRequest(url, 'POST');
     commentData = PrepareCommentData(commentTextForSend)
@@ -133,7 +135,10 @@ def IsOldComment(inCommentItem, inUserName):
 
 
 def GetCommentsItemsForTask(inTaskId):
-    url = 'https://api.hacknplan.com/v0/projects/%s/workitems/%s/comments' % (projectId, inTaskId)
+    url = 'https://api.hacknplan.com/v0/projects/{project}/workitems/{task}/comments'.format(
+        project=projectId, task=taskId, comment=commentId
+    )
+
     urlRequest = CreateUrlRequest(url, 'GET')
 
     try:

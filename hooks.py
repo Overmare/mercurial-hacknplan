@@ -1,11 +1,14 @@
 import json
 import os
+import re
 import urllib
 from mercurial.ui import ui
 
 hookDirectory = os.path.dirname(os.path.abspath(__file__))
 cacheFilePath = hookDirectory + "/HacknPlan_HookCache.json"
 secretsFilePath = hookDirectory + "/HacknPlan_Settings.json"
+
+TASK_REGEX = re.compile(r'(?:\W|^)#(?P<issue>\d+)\b')
 
 
 def PrintErrorMsg(msg):
@@ -154,16 +157,7 @@ def FormatCommitMessage(inHash, inUser, inDescription):
 
 
 def ParseTaskIds(inText):
-    words = inText.split()
-    taskIds = []
-    for word in words:
-        taskIdWordIndex = word.find('#')
-        if taskIdWordIndex != -1:
-            word = word.replace('#', '')
-            taskId = int(word)
-            if taskId not in taskIds:
-                taskIds.append(taskId)
-    return taskIds
+    return TASK_REGEX.findall(inText)
 
 
 def FixDescriptionForTableRow(inText):

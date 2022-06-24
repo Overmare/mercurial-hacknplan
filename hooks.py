@@ -72,6 +72,7 @@ def EditOldComment(inCommentItem, inCommitMessages):
         urllib.request.urlopen(urlRequest, data=commentData)
     except urllib.error.URLError as ex:
         PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        return
 
 
 def SendNewComment(inTaskId, inCommitMessages):
@@ -79,13 +80,14 @@ def SendNewComment(inTaskId, inCommitMessages):
         project=projectId, task=inTaskId,
     )
     commentTextForSend = commentHeader + ''.join(inCommitMessages)
-    urlRequest = CreateUrlRequest(url, 'POST');
+    urlRequest = CreateUrlRequest(url, 'POST')
     commentData = PrepareCommentData(commentTextForSend)
 
     try:
         urllib.request.urlopen(urlRequest, data=commentData)
     except urllib.error.URLError as ex:
         PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        return
 
 
 ########################
@@ -118,6 +120,7 @@ def GetHookUserName():
             response = urllib.request.urlopen(urlRequest)
         except urllib.error.URLError as ex:
             PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+            return
 
         receivedData = ResponseToJson(response)
         username = receivedData['username']
@@ -145,6 +148,7 @@ def GetCommentsItemsForTask(inTaskId):
         response = urllib.request.urlopen(urlRequest)
     except urllib.error.URLError as ex:
         PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        return
 
     receivedData = ResponseToJson(response)
     return receivedData['items']

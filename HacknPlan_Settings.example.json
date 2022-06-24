@@ -2,5 +2,5 @@
     "projectId": "123456",
     "apiKey": "ad9647c700c5454ba315360797ec0510",
     "commentHeader": "![Logo](https://www.mercurial-scm.org/hg-logo/droplets-24.png) Task related commits \\n\\n | | | \\n |:-|:-|:-| \\n",
-    "commitTableRowFormat": "| [%s](https://project.local/hg/reponame/rev/%s) | %s | %s |\\n"
+    "commitTableRowFormat": "| [{rev}](https://project.local/hg/reponame/rev/{rev}) | {user} | {title} |\\n"
 }

@@ -61,7 +61,9 @@ def EditOldComment(inCommentItem, inCommitMessages):
     taskId = inCommentItem['workItemId']
     commentId = inCommentItem['commentId']
     commentTextForSend = inCommentItem['text'] + ''.join(inCommitMessages)
-    url = 'https://api.hacknplan.com/v0/projects/%s/workitems/%s/comments/%s' % (projectId, taskId, commentId)
+    url = f'https://api.hacknplan.com/v0/projects/{projectId}/workitems/{taskId}/comments/{commentId}'.format(
+        projectId=projectId, taskId=taskId, commentId=commentId
+    )
     urlRequest = CreateUrlRequest(url, 'PUT')
     commentData = PrepareCommentData(commentTextForSend)
 
@@ -154,7 +156,7 @@ def FormatCommitMessage(inHash, inUser, inDescription):
     else:
         title = description
     title = FixDescriptionForTableRow(title)
-    return commitTableRowFormat % (inHash, inHash, inUser, title)
+    return commitTableRowFormat.format(rev=inHash, user=inUser, title=title)
 
 
 def ParseTaskIds(inText):

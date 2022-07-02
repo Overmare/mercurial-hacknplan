@@ -9,7 +9,7 @@ Copy it to the .hg directory of your repository on the server, change its hgrc l
 incoming.hacknplan-mentioned-issues = python:.hg/hooks.py:ReportToHacknPlan
 ```
 
-and put a HacknPlan_Settings.json file right next to it:
+and put a `HacknPlan_Settings.json` file right next to it:
 
 ```sh
 cp HacknPlan_Settings.example.json HacknPlan_Settings.json

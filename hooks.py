@@ -140,7 +140,7 @@ def IsOldComment(inCommentItem, inUserName):
 
 def GetCommentsItemsForTask(inTaskId):
     url = 'https://api.hacknplan.com/v0/projects/{project}/workitems/{task}/comments'.format(
-        project=projectId, task=taskId, comment=commentId
+        project=projectId, task=inTaskId,
     )
 
     urlRequest = CreateUrlRequest(url, 'GET')

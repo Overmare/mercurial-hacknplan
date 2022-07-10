@@ -11,7 +11,7 @@ secretsFilePath = hookDirectory + "/HacknPlan_Settings.json"
 TASK_REGEX = re.compile(r'(?:\W|^)#(?P<issue>\d+)\b')
 
 
-def PrintErrorMsg(msg):
+def PrintErrorMsg(ui, msg):
     ui.write((msg + "\n").encode("utf-8"))
 # end def
 
@@ -20,6 +20,7 @@ try:
     secrets = json.load(open(secretsFilePath))
 except (IOError, ValueError) as ex:
     PrintErrorMsg(
+        ui,
         "Hack-n-Plan incoming hook could not load secrets because %s \nand.. stopped execution ¯\_(ツ)_/¯" % str(ex)
     )
     exit(1)
@@ -71,7 +72,7 @@ def EditOldComment(inCommentItem, inCommitMessages):
     try:
         urllib.request.urlopen(urlRequest, data=commentData)
     except urllib.error.URLError as ex:
-        PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        PrintErrorMsg(ui, ("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
         return
 
 
@@ -86,7 +87,7 @@ def SendNewComment(inTaskId, inCommitMessages):
     try:
         urllib.request.urlopen(urlRequest, data=commentData)
     except urllib.error.URLError as ex:
-        PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        PrintErrorMsg(ui, ("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
         return
 
 
@@ -119,7 +120,7 @@ def GetHookUserName():
         try:
             response = urllib.request.urlopen(urlRequest)
         except urllib.error.URLError as ex:
-            PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+            PrintErrorMsg(ui, ("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
             return
 
         receivedData = ResponseToJson(response)
@@ -147,7 +148,7 @@ def GetCommentsItemsForTask(inTaskId):
     try:
         response = urllib.request.urlopen(urlRequest)
     except urllib.error.URLError as ex:
-        PrintErrorMsg(("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
+        PrintErrorMsg(ui, ("<Hack&Plan incoming hook> [%s] " % __name__) + str(ex))
         return
 
     receivedData = ResponseToJson(response)

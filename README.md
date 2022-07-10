@@ -42,25 +42,37 @@ hg init
 
 cat <<EOS
 [hooks]
-incoming.hacknplan-mentioned-issues = python: ../hooks.py:ReportToHacknPlan
+incoming.hacknplan-mentioned-issues = python:../hooks.py:ReportToHacknPlan
 EOS >> .hg/hgrc
 
-hg serve &
+hg serve --config web.push_ssl=No --config 'web.allow_push=*' &
+# for more details see https://mercurial.aragost.com/kick-start/en/remote/#working-with-repositories-over-http
 
 
 cd ..
 hg clone http://localhost:8000 test_hg_cloned
 
 cd test_hg_cloned
-# DANGEROUS CONFIG - ONLY FOR LOCAL TESTING!
-tee -a .hg/hgrc <<EOS
-[web]
-push_ssl=False
-allow_push=*
-EOS
-
 
 echo 'Test file' > test.file.txt
 hg add test.file.txt
 hg commit -m 'test file added for testing purposes'
+hg push
+```
+
+##### Test, but complicated with HTTPS
+
+```bash
+hg serve --config web.push_ssl=No --config 'web.allow_push=*' &
+# for more details see https://mercurial.aragost.com/kick-start/en/remote/#working-with-repositories-over-http
+
+
+# fake ssl with mitmproxy
+mitmproxy --mode "reverse:http://localhost:8000" &
+
+# clone, insecure
+hg clone --insecure https://localhost:8080 test_hg_cloned
+
+# push, insecure
+hg push --insecure
 ```
